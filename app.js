@@ -1,8 +1,12 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
+const rateLimit = require('express-rate-limit');
 const usersRouter = require('./routes/users');
 const cardsRouter = require('./routes/cards');
+const {
+  ERR_NOT_FOUND,
+} = require('./errors/errors-code');
 
 const app = express();
 
@@ -22,6 +26,9 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use('/', usersRouter);
 app.use('/', cardsRouter);
+app.use((req, res) => {
+  res.status(ERR_NOT_FOUND).send({ message: 'Запрос на не существующий роут' });
+});
 
 app.listen(PORT, () => {
   console.log(`App listening on port ${PORT}`);
