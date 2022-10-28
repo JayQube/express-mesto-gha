@@ -1,8 +1,9 @@
 const usersRouter = require('express').Router();
+const { celebrate, Joi } = require('celebrate');
 const rateLimit = require('express-rate-limit');
 
 const {
-  createUser, getUsers, getUserById, updateProfile, updateAvatar,
+  getUsers, getUserById, getCurrentUser, updateProfile, updateAvatar,
 } = require('../controllers/users');
 
 const limiter = rateLimit({
@@ -15,10 +16,23 @@ const limiter = rateLimit({
 
 usersRouter.use('/', limiter);
 
-usersRouter.post('/users', createUser);
 usersRouter.get('/users', getUsers);
-usersRouter.get('/users/:userId', getUserById);
-usersRouter.patch('/users/me', updateProfile);
-usersRouter.patch('/users/me/avatar', updateAvatar);
+usersRouter.get('/users/me', getCurrentUser);
+usersRouter.get('/users/:userId', celebrate({
+  params: Joi.object().keys({
+    userId: Joi.string().alphanum().length(24),
+  }),
+}), getUserById);
+usersRouter.patch('/users/me', celebrate({
+  body: Joi.object().keys({
+    name: Joi.string().required().min(2).max(30),
+    about: Joi.string().required().min(2).max(30),
+  }),
+}), updateProfile);
+usersRouter.patch('/users/me/avatar', celebrate({
+  body: Joi.object().keys({
+    avatar: Joi.string().required().pattern(/^(https?:\/\/)?([\w\\.]+)\.([a-z]{2,6}\.?)(\/[\w\\.]*)*\/?$/),
+  }),
+}), updateAvatar);
 
 module.exports = usersRouter;
