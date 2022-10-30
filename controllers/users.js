@@ -21,11 +21,11 @@ module.exports.createUser = (req, res, next) => {
     }))
     .catch((err) => {
       if (err.code === 11000) {
-        throw new ConflictError('Этот Email уже занят');
+        next(new ConflictError('Этот Email уже занят'));
+      } else {
+        next(err);
       }
-      next(err);
-    })
-    .catch(next);
+    });
 };
 
 module.exports.login = (req, res, next) => {
@@ -48,12 +48,7 @@ module.exports.getUsers = (req, res, next) => {
 module.exports.getCurrentUser = (req, res, next) => {
   User
     .findById(req.user._id)
-    .then((user) => {
-      if (!user) {
-        throw new NotFoundError('Пользователь по указанному _id не найден.');
-      }
-      res.send(user);
-    })
+    .then((user) => res.send(user))
     .catch(next);
 };
 
@@ -78,12 +73,7 @@ module.exports.updateProfile = (req, res, next) => {
       new: true,
       runValidators: true,
     })
-    .then((user) => {
-      if (!user) {
-        throw new NotFoundError('Пользователь по указанному _id не найден.');
-      }
-      res.send(user);
-    })
+    .then((user) => res.send(user))
     .catch(next);
 };
 
@@ -96,11 +86,6 @@ module.exports.updateAvatar = (req, res, next) => {
       new: true,
       runValidators: true,
     })
-    .then((user) => {
-      if (!user) {
-        throw new NotFoundError('Пользователь по указанному _id не найден.');
-      }
-      res.send(user);
-    })
+    .then((user) => res.send(user))
     .catch(next);
 };

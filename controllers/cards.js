@@ -31,12 +31,11 @@ module.exports.deleteCard = (req, res, next) => {
       }
       if (card.owner.toString() !== req.user._id) {
         throw new ForbiddenError('Нет прав на удаление карточки');
-      } else {
-        Card.findByIdAndRemove(req.params.cardId)
-          .then((chosenСard) => {
-            res.send(chosenСard);
-          });
       }
+      Card.findByIdAndRemove(req.params.cardId)
+        .then((chosenСard) => {
+          res.send(chosenСard);
+        });
     })
     .catch(next);
 };
@@ -47,11 +46,11 @@ module.exports.likeCard = (req, res, next) => Card
     { $addToSet: { likes: req.user._id } },
     { new: true },
   )
-  .then((id) => {
-    if (!id) {
+  .then((card) => {
+    if (!card) {
       throw new NotFoundError('Карточка с таким id не найдена.');
     }
-    res.send(id);
+    res.send(card);
   })
   .catch(next);
 
@@ -61,10 +60,10 @@ module.exports.dislikeCard = (req, res, next) => Card
     { $pull: { likes: req.user._id } },
     { new: true },
   )
-  .then((id) => {
-    if (!id) {
+  .then((card) => {
+    if (!card) {
       throw new NotFoundError('Карточка с таким id не найдена.');
     }
-    res.send(id);
+    res.send(card);
   })
   .catch(next);
