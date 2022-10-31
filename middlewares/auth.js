@@ -6,17 +6,17 @@ module.exports = (req, res, next) => {
 
   if (!authorization || !authorization.startsWith('Bearer ')) {
     next(new UnauthorizedError('Необходима авторизация'));
+  } else {
+    const token = authorization.replace('Bearer ', '');
+    let payload;
+
+    try {
+      payload = jwt.verify(token, 'some-secret-key');
+    } catch (err) {
+      next(new UnauthorizedError('Необходима авторизация'));
+    }
+
+    req.user = payload;
   }
-  const token = authorization.replace('Bearer ', '');
-  let payload;
-
-  try {
-    payload = jwt.verify(token, 'some-secret-key');
-  } catch (err) {
-    next(new UnauthorizedError('Необходима авторизация'));
-  }
-
-  req.user = payload;
-
   next();
 };

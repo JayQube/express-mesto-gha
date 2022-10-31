@@ -2,6 +2,7 @@ const Card = require('../models/card');
 
 const NotFoundError = require('../errors/not-found-err');
 const ForbiddenError = require('../errors/forbidden-error');
+const BadRequestError = require('../errors/bad-reques-err');
 
 module.exports.createCard = (req, res, next) => {
   const {
@@ -12,7 +13,13 @@ module.exports.createCard = (req, res, next) => {
       name, link, owner: req.user._id,
     })
     .then((card) => res.send(card))
-    .catch(next);
+    .catch((err) => {
+      if (err.name === 'ValidationError') {
+        next(new BadRequestError('Переданы некорректные данные при создании карточки.'));
+      } else {
+        next(err);
+      }
+    });
 };
 
 module.exports.getCards = (req, res, next) => {
@@ -37,7 +44,13 @@ module.exports.deleteCard = (req, res, next) => {
           res.send(chosenСard);
         });
     })
-    .catch(next);
+    .catch((err) => {
+      if (err.name === 'CastError') {
+        next(new BadRequestError('Переданы некорректные данные при удалении карточки.'));
+      } else {
+        next(err);
+      }
+    });
 };
 
 module.exports.likeCard = (req, res, next) => Card
@@ -52,7 +65,13 @@ module.exports.likeCard = (req, res, next) => Card
     }
     res.send(card);
   })
-  .catch(next);
+  .catch((err) => {
+    if (err.name === 'CastError') {
+      next(new BadRequestError('Переданы некорректные данные для постановки лайка.'));
+    } else {
+      next(err);
+    }
+  });
 
 module.exports.dislikeCard = (req, res, next) => Card
   .findByIdAndUpdate(
@@ -66,4 +85,10 @@ module.exports.dislikeCard = (req, res, next) => Card
     }
     res.send(card);
   })
-  .catch(next);
+  .catch((err) => {
+    if (err.name === 'CastError') {
+      next(new BadRequestError('Переданы некорректные данные для снятия лайка.'));
+    } else {
+      next(err);
+    }
+  });

@@ -4,6 +4,7 @@ const User = require('../models/user');
 
 const NotFoundError = require('../errors/not-found-err');
 const ConflictError = require('../errors/conflict-err');
+const BadRequestError = require('../errors/bad-reques-err');
 
 module.exports.createUser = (req, res, next) => {
   const {
@@ -22,6 +23,8 @@ module.exports.createUser = (req, res, next) => {
     .catch((err) => {
       if (err.code === 11000) {
         next(new ConflictError('Этот Email уже занят'));
+      } else if (err.name === 'ValidationError') {
+        next(new BadRequestError('Переданы некорректные данные при создании пользователя.'));
       } else {
         next(err);
       }
@@ -61,7 +64,13 @@ module.exports.getUserById = (req, res, next) => {
       }
       res.send(user);
     })
-    .catch(next);
+    .catch((err) => {
+      if (err.name === 'CastError') {
+        next(new BadRequestError('Переданы некорректные данные при поиске пользователя.'));
+      } else {
+        next(err);
+      }
+    });
 };
 
 module.exports.updateProfile = (req, res, next) => {
@@ -74,7 +83,13 @@ module.exports.updateProfile = (req, res, next) => {
       runValidators: true,
     })
     .then((user) => res.send(user))
-    .catch(next);
+    .catch((err) => {
+      if (err.name === 'ValidationError') {
+        next(new BadRequestError('Переданы некорректные данные при обновлении профиля.'));
+      } else {
+        next(err);
+      }
+    });
 };
 
 module.exports.updateAvatar = (req, res, next) => {
@@ -87,5 +102,11 @@ module.exports.updateAvatar = (req, res, next) => {
       runValidators: true,
     })
     .then((user) => res.send(user))
-    .catch(next);
+    .catch((err) => {
+      if (err.name === 'ValidationError') {
+        next(new BadRequestError('Переданы некорректные данные при обновлении аватара.0'));
+      } else {
+        next(err);
+      }
+    });
 };
